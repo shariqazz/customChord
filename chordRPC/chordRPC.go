@@ -277,7 +277,7 @@ func (this *ChordService) ProposePredecessor(msg *Msg, reply *Reply) error {
 		// set accepted node's successor to this node
 		var reply *Reply
 		msg := Msg{nodeAddress, nodeAddress, getIdentifier(nodeAddress), "node", nodeAddress}
-		err := predecessorHandler.Call("ChordService.SetSuccessor", &msg, &reply)
+		err := predecessorHandler.Call("ChordService.SetSuccessor", &msg, &reply) // should i be proposing instead of setting directly(yes, most probably)
 		if err != nil {
 			str = fmt.Sprintf("Received reply for predecessor propsal from %s: %s\n", predecessorAddress, reply.Val)
 			sectionedPrint(str)
@@ -285,6 +285,9 @@ func (this *ChordService) ProposePredecessor(msg *Msg, reply *Reply) error {
 			str = fmt.Sprintf("Unable to set successor of %s\n", predecessorAddress)
 			sectionedPrint(str)
 		}
+
+		// update finger table now that system has more or less stabilized (TODO)
+		populateFingerTable()
 	} else {
 		str = fmt.Sprintf("Predecessor address is not nil. It is: %s\n", predecessorAddress)
 		sectionedPrint(str)
@@ -312,6 +315,9 @@ func (this *ChordService) ProposeSuccessor(msg *Msg, reply *Reply) error {
 			str = fmt.Sprintf("Unable to set predecessor of %s\n", predecessorAddress)
 			sectionedPrint(str)
 		}
+
+		// update finger table now that system has more or less stabilized (TODO)
+		populateFingerTable()
 	}
 
 	return nil
@@ -510,7 +516,7 @@ func populateFingerTable() {
 
 		if betweenIdentifiers(key) {
 			ftab[key] = successorAddress
-		} else {
+		} else if successorAddress != "" {
 			var reply Reply
 			msg := Msg {nodeAddress, "", key, "ftab", ""}
 			handler := getRpcHandler(successorAddress)
@@ -523,6 +529,11 @@ func populateFingerTable() {
 
 			err = handler.Close()
 			checkError(err)
+		} else {
+			// successor is nil - retry in a few seconds (TODO)
+			fmt.Println("Successor is nil - retrying poulation in 5 seconds")
+			time.Sleep(5 * time.Second)
+			populateFingerTable()
 		}
 	}
 
