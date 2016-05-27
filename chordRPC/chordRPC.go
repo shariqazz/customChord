@@ -457,7 +457,7 @@ func manageHeartbeats() {
 
 				// adjust ftab
 				for i, addr := range ftab {
-					if addr == successorAddress {
+					if addr == predecessorAddress {
 						ftab[i] = "unstable"
 					}
 				}
