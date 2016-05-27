@@ -277,7 +277,7 @@ func (this *ChordService) ProposePredecessor(msg *Msg, reply *Reply) error {
 		// set accepted node's successor to this node
 		var reply *Reply
 		msg := Msg{nodeAddress, nodeAddress, getIdentifier(nodeAddress), "node", nodeAddress}
-		err := predecessorHandler.Call("ChordService.SetSuccessor", &msg, &reply) // should i be proposing instead of setting directly(yes, most probably)
+		err := predecessorHandler.Call("ChordService.ProposeSuccessor", &msg, &reply) // should i be proposing instead of setting directly(yes, most probably)
 		if err != nil {
 			str = fmt.Sprintf("Received reply for predecessor propsal from %s: %s\n", predecessorAddress, reply.Val)
 			sectionedPrint(str)
@@ -307,7 +307,7 @@ func (this *ChordService) ProposeSuccessor(msg *Msg, reply *Reply) error {
 		// set accepted node's predecessor to this node
 		var reply *Reply
 		msg := Msg{nodeAddress, nodeAddress, getIdentifier(nodeAddress), "node", nodeAddress}
-		err := successorHandler.Call("ChordService.SetPredecessor", &msg, &reply)
+		err := successorHandler.Call("ChordService.ProposePredecessor", &msg, &reply)
 		if err != nil {
 			str = fmt.Sprintf("Received reply for successor propsal from %s: %s\n", successorAddress, reply.Val)
 			sectionedPrint(str)
