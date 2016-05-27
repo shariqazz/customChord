@@ -58,22 +58,6 @@ var (
 
 func Start (nodeAddr string, peerAddr string, fileTransAddr string) {
 
-	// if len(os.Args) < 3 {
-	// 	fmt.Println("=====================================================")
-	// 	fmt.Println("USAGE: go run chordRpc.go <nodeAddress> <peerAddress>")
-	// 	fmt.Println("EXAMPLE: go run chordRpc.go :14321 :14322")
-	// 	fmt.Println("=====================================================")
-	// 	fmt.Println("NOTE: If first node in system, use same address")
-	// 	fmt.Println("EXAMPLE: go run chordRpc.go :14322 :14322")
-	// 	fmt.Println("=====================================================")
-	// 	os.Exit(-1)
-	// }
-
-	// set this node's rpc address TODO
-	// nodeAddress = os.Args[1]
-	// peerAddress = os.Args[2]
-	// ftAddr = os.Args[3]
-
 	nodeAddress = nodeAddr
 	peerAddress = peerAddr
 	ftAddr = fileTransAddr
@@ -470,6 +454,14 @@ func manageHeartbeats() {
 			err := predecessorHandler.Call("ChordService.Heartbeat", &msg, &reply)
 			if err != nil {
 				sectionedPrint("Predecessor is DEAD!")
+
+				// adjust ftab
+				for i, addr := range ftab {
+					if addr == successorAddress {
+						ftab[i] = "unstable"
+					}
+				}
+
 				predecessorAddress = ""
 				predecessorIdentifier = -1
 				predecessorHandler = nil
